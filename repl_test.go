@@ -25,7 +25,6 @@ func TestCleanInput(t *testing.T) {
 		actual := CleanInput(c.input)
 		if len(actual) != len(c.expected) {
 			t.Errorf("The number of words doesn't match")
-			t.Log(actual)
 		}
 
 		for i, word := range actual {
