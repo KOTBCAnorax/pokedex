@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/KOTBCAnorax/pokedex/internal/pokeAPI"
 )
 
 type cliCommand struct {
@@ -23,6 +25,21 @@ var Commands = map[string]cliCommand{
 		name:        "exit",
 		description: "Exit the Pokedex",
 		callback:    commandExit,
+	},
+	"map": {
+		name:        "map",
+		description: "Display next 20 areas in the Pokemon world",
+		callback:    commandMap,
+	},
+	"mapb": {
+		name:        "mapb",
+		description: "Display previous 20 areas in the Pokemon world",
+		callback:    commandMapb,
+	},
+	"config": {
+		name:        "config",
+		description: "View current config",
+		callback:    commandConfig,
 	},
 }
 
@@ -43,7 +60,26 @@ Usage:
 
 help: Displays a help message
 exit: Exit the Pokedex
+map: See next 20 areas of the Pokemon world
+mapb: See previous 20 areas of the Pokemon world
+config: See previous and next URLs
 `)
+	return nil
+}
+
+func commandMap() error {
+	pokeAPI.AdvanceMap()
+	return nil
+}
+
+func commandMapb() error {
+	pokeAPI.RetreatMap()
+	return nil
+}
+
+func commandConfig() error {
+	fmt.Println(pokeAPI.Config.Prev)
+	fmt.Println(pokeAPI.Config.Next)
 	return nil
 }
 
@@ -55,8 +91,7 @@ func main() {
 		inputWords := CleanInput(scanner.Text())
 		command, ok := Commands[inputWords[0]]
 		if ok {
-			err := command.callback()
-			fmt.Printf("Errors: %v\n", err)
+			command.callback()
 		} else {
 			fmt.Println("Unknown command")
 		}
