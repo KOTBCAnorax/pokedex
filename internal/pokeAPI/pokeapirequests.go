@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/KOTBCAnorax/pokedex/internal/pokecache"
 )
 
 type PokeArea struct {
@@ -24,20 +26,25 @@ type config struct {
 
 var Config = config{Prev: "", Next: "https://pokeapi.co/api/v2/location-area/"}
 
-func makePokeHttpRequest(url string) error {
-	res, err := http.Get(url)
-	if err != nil {
-		return fmt.Errorf("PokeAPI http request failed: %v", err)
-	}
+func makePokeHttpRequest(url string, c *pokecache.Cache) error {
+	body, ok := c.Get(url)
+	if !ok {
+		res, err := http.Get(url)
+		if err != nil {
+			return fmt.Errorf("PokeAPI http request failed: %v", err)
+		}
 
-	body, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		return fmt.Errorf("failed to read PokeAPI http response: %v", err)
+		body, err = io.ReadAll(res.Body)
+		defer res.Body.Close()
+		if err != nil {
+			return fmt.Errorf("failed to read PokeAPI http response: %v", err)
+		}
+
+		c.Add(url, body)
 	}
 
 	locations := PokeArea{}
-	err = json.Unmarshal(body, &locations)
+	err := json.Unmarshal(body, &locations)
 	if err != nil {
 		return fmt.Errorf("failed to decode http response: %v", err)
 	}
@@ -51,20 +58,20 @@ func makePokeHttpRequest(url string) error {
 	return nil
 }
 
-func AdvanceMap() error {
+func AdvanceMap(c *pokecache.Cache) error {
 	if Config.Next == "" {
 		fmt.Println("you're on the last page")
 		return nil
 	}
-	makePokeHttpRequest(Config.Next)
+	makePokeHttpRequest(Config.Next, c)
 	return nil
 }
 
-func RetreatMap() error {
+func RetreatMap(c *pokecache.Cache) error {
 	if Config.Prev == "" {
 		fmt.Println("you're on the first page")
 		return nil
 	}
-	makePokeHttpRequest(Config.Prev)
+	makePokeHttpRequest(Config.Prev, c)
 	return nil
 }

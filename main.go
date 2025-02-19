@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/KOTBCAnorax/pokedex/internal/pokeAPI"
+	"github.com/KOTBCAnorax/pokedex/internal/pokecache"
 )
 
 type cliCommand struct {
@@ -14,6 +15,8 @@ type cliCommand struct {
 	description string
 	callback    func() error
 }
+
+var Cache = pokecache.NewCache(10)
 
 var Commands = map[string]cliCommand{
 	"help": {
@@ -40,6 +43,11 @@ var Commands = map[string]cliCommand{
 		name:        "config",
 		description: "View current config",
 		callback:    commandConfig,
+	},
+	"cache": {
+		name:        "cache",
+		description: "Display current cahce state",
+		callback:    commandCache,
 	},
 }
 
@@ -68,12 +76,12 @@ config: See previous and next URLs
 }
 
 func commandMap() error {
-	pokeAPI.AdvanceMap()
+	pokeAPI.AdvanceMap(Cache)
 	return nil
 }
 
 func commandMapb() error {
-	pokeAPI.RetreatMap()
+	pokeAPI.RetreatMap(Cache)
 	return nil
 }
 
@@ -83,9 +91,14 @@ func commandConfig() error {
 	return nil
 }
 
+func commandCache() error {
+	Cache.Display()
+	return nil
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	for true {
+	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
 		inputWords := CleanInput(scanner.Text())
