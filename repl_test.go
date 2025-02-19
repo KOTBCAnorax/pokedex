@@ -17,7 +17,7 @@ func TestCleanInput(t *testing.T) {
 		},
 		{
 			input:    "      I can't think of anymore test cases",
-			expected: []string{"I", "can't", "think", "of", "anymore", "test", "cases"},
+			expected: []string{"i", "can't", "think", "of", "anymore", "test", "cases"},
 		},
 	}
 
