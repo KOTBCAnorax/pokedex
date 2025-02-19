@@ -59,19 +59,19 @@ func (c *Cache) reapLoop(interval time.Duration) {
 				ticker.Stop()
 				return
 			case <-ticker.C:
-				fmt.Println("\n\n" + GetCurrentTime())
-				fmt.Println("Updating cache")
+				//fmt.Println("\n\n" + GetCurrentTime())
+				//fmt.Println("Updating cache")
 				currentTime := time.Now()
 				c.mutex.Lock()
 				for key := range c.pokemap {
 					difference := currentTime.Sub(c.pokemap[key].createdAt)
 					if difference > interval*time.Second {
-						fmt.Printf("\nDeleting: %s (%v Elapsed)", key, difference)
+						//fmt.Printf("\nDeleting: %s (%v Elapsed)", key, difference)
 						delete(c.pokemap, key)
 					}
 				}
 				c.mutex.Unlock()
-				fmt.Print("\nPokedex > ")
+				//fmt.Print("\nPokedex > ")
 			}
 		}
 	}()
