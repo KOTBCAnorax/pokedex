@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -54,6 +55,11 @@ var Commands = map[string]cliCommand{
 		description: "Get a list of all pokemons in the given area",
 		callback:    commandExplore,
 	},
+	"catch": {
+		name:        "catch",
+		description: "Try to catch given pokemon",
+		callback:    commandCatch,
+	},
 }
 
 func CleanInput(text string) []string {
@@ -76,7 +82,8 @@ exit: Exit the Pokedex
 map: See next 20 areas of the Pokemon world
 mapb: See previous 20 areas of the Pokemon world
 config: See previous and next URLs
-explore {area name}: get a list of all pooemon in the given area
+explore {area name}: Get a list of all pooemon in the given area
+catch {pokemon name}: Try to catch given pokemon
 `)
 	return nil
 }
@@ -113,6 +120,35 @@ func commandExplore(args ...string) error {
 	}
 	return err
 }
+
+func commandCatch(args ...string) error {
+	if len(args) == 0 {
+		fmt.Println("No pokemon name given")
+		return fmt.Errorf("no pokemon name given")
+	}
+
+	pokemon, err := pokeAPI.GetPokemon(args[0], Cache)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", args[0])
+	fmt.Printf("%s's base experience: %d\n", pokemon.Name, pokemon.BaseExperience)
+	chance := int(100.0 - 100*float64(pokemon.BaseExperience)/maxBaseExp)
+	fmt.Printf("Chance of success: %d%%\n", chance)
+	randInt := rand.Intn(101)
+	if randInt >= chance {
+		Pokedex[pokemon.Name] = *pokemon
+		fmt.Printf("%s was caught!\n", pokemon.Name)
+	} else {
+		fmt.Printf("%s escaped!\n", pokemon.Name)
+	}
+	return nil
+}
+
+var Pokedex = map[string]pokeAPI.Pokemon{}
+var maxBaseExp = 390.0
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
