@@ -13,7 +13,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(args ...string) error
 }
 
 var Cache = pokecache.NewCache(10)
@@ -49,6 +49,11 @@ var Commands = map[string]cliCommand{
 		description: "Display current cahce state",
 		callback:    commandCache,
 	},
+	"explore": {
+		name:        "explore {area name}",
+		description: "Get a list of all pokemons in the given area",
+		callback:    commandExplore,
+	},
 }
 
 func CleanInput(text string) []string {
@@ -56,13 +61,13 @@ func CleanInput(text string) []string {
 	return strings.Fields(lowerCase)
 }
 
-func commandExit() error {
+func commandExit(args ...string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp() error {
+func commandHelp(args ...string) error {
 	fmt.Print(`Welcome to the Pokedex!
 Usage:
 
@@ -71,28 +76,38 @@ exit: Exit the Pokedex
 map: See next 20 areas of the Pokemon world
 mapb: See previous 20 areas of the Pokemon world
 config: See previous and next URLs
+explore {area name}: get a list of all pooemon in the given area
 `)
 	return nil
 }
 
-func commandMap() error {
+func commandMap(args ...string) error {
 	pokeAPI.AdvanceMap(Cache)
 	return nil
 }
 
-func commandMapb() error {
+func commandMapb(args ...string) error {
 	pokeAPI.RetreatMap(Cache)
 	return nil
 }
 
-func commandConfig() error {
+func commandConfig(args ...string) error {
 	fmt.Println(pokeAPI.Config.Prev)
 	fmt.Println(pokeAPI.Config.Next)
 	return nil
 }
 
-func commandCache() error {
+func commandCache(args ...string) error {
 	Cache.Display()
+	return nil
+}
+
+func commandExplore(args ...string) error {
+	if len(args) == 0 {
+		fmt.Println("No area name provided")
+		return fmt.Errorf("No area name provided")
+	}
+	pokeAPI.GetPokemonsList(args[0], Cache)
 	return nil
 }
 
@@ -104,7 +119,11 @@ func main() {
 		inputWords := CleanInput(scanner.Text())
 		command, ok := Commands[inputWords[0]]
 		if ok {
-			command.callback()
+			if len(inputWords) > 1 {
+				command.callback(inputWords[1])
+			} else {
+				command.callback()
+			}
 		} else {
 			fmt.Println("Unknown command")
 		}
