@@ -43,7 +43,6 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	defer c.mutex.RUnlock()
 	entry, ok := c.pokemap[key]
 	if !ok {
-		fmt.Println("Not cached")
 		return []byte{}, false
 	}
 
