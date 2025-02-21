@@ -104,11 +104,14 @@ func commandCache(args ...string) error {
 
 func commandExplore(args ...string) error {
 	if len(args) == 0 {
-		fmt.Println("No area name provided")
-		return fmt.Errorf("No area name provided")
+		fmt.Println("no area name provided")
+		return fmt.Errorf("no area name provided")
 	}
-	pokeAPI.GetPokemonsList(args[0], Cache)
-	return nil
+	err := pokeAPI.GetPokemonsList(args[0], Cache)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err
 }
 
 func main() {

@@ -62,9 +62,12 @@ type PokeArea struct {
 
 func GetPokemonsList(areaname string, c *pokecache.Cache) error {
 	url := LocationAreaURL + "/" + areaname
-	response, _ := makePokeHttpRequest(url, c)
+	response, err := makePokeHttpRequest(url, c)
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
 	pokemons := PokeArea{}
-	err := json.Unmarshal(response, &pokemons)
+	err = json.Unmarshal(response, &pokemons)
 	if err != nil {
 		return fmt.Errorf("failed to decode http response: %v", err)
 	}

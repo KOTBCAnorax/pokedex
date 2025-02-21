@@ -31,6 +31,10 @@ func makePokeHttpRequest(url string, c *pokecache.Cache) ([]byte, error) {
 	body, ok := c.Get(url)
 	if !ok {
 		res, err := http.Get(url)
+		if res.StatusCode == 404 {
+			return nil, fmt.Errorf("PokeAPI http request failed: 404 not found, please verify your input")
+		}
+
 		if err != nil {
 			return nil, fmt.Errorf("PokeAPI http request failed: %v", err)
 		}
